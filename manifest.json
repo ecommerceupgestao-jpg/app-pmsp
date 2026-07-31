@@ -1,0 +1,15 @@
+{
+  "name": "PMESP OPS — Painel de Prontidão",
+  "short_name": "PMESP OPS",
+  "description": "App de estudos para o concurso de Soldado PM 2ª Classe (PMESP)",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12140F",
+  "theme_color": "#12140F",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
