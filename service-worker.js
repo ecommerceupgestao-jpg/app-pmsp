@@ -1,4 +1,4 @@
-const CACHE_NAME = "pmesp-ops-v1";
+const CACHE_NAME = "pmesp-ops-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -25,21 +25,19 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Cache-first para o app shell; passa direto pra rede em outras requisições (ex: fontes externas)
+// Network-first: sempre tenta buscar a versão mais nova primeiro.
+// Só usa o cache se estiver sem internet. Evita ficar preso numa versão antiga.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return; // deixa fontes do Google, etc, seguirem normal
+  if (url.origin !== self.location.origin) return; // deixa fontes externas seguirem normal
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => cached);
-    })
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
