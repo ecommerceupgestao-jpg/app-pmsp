@@ -358,7 +358,9 @@ function TelaEstudo() {
     if (correta) { setAcertos((a) => a + 1); }
     else {
       setErradasSessao((e) => [...e, q]);
-      const novoBanco = { ...errosSalvos, [q.id]: { ...q, vezes_errada: (errosSalvos[q.id]?.vezes_errada || 0) + 1, ultima_vez: new Date().toISOString() } };
+      const anterior = errosSalvos[q.id];
+      const vezesAnteriores = (anterior && anterior.vezes_errada) || 0;
+      const novoBanco = { ...errosSalvos, [q.id]: { ...q, vezes_errada: vezesAnteriores + 1, ultima_vez: new Date().toISOString() } };
       setErrosSalvos(novoBanco);
       try { await window.storage.set("banco_erros", JSON.stringify(novoBanco)); } catch (e) { console.error(e); }
     }
@@ -523,7 +525,13 @@ function TelaRevisao() {
             <>
               <div style={{ fontSize: 12, color: T.inkDim, marginBottom: 10, textAlign: "center" }}>
                 {selecionada === fila[idx].gabarito
-                  ? (bancoErros[fila[idx].id]?.dominado ? "Domínio confirmado — sai da fila de revisão." : `Volta em ${INTERVALOS[Math.min((bancoErros[fila[idx].id]?.streak_dias_corretos.length || 1) - 1, INTERVALOS.length - 1)]} dia(s).`)
+                  ? (() => {
+                      const itemAtual = bancoErros[fila[idx].id];
+                      if (itemAtual && itemAtual.dominado) return "Domínio confirmado — sai da fila de revisão.";
+                      const nivelAtual = (itemAtual && itemAtual.streak_dias_corretos && itemAtual.streak_dias_corretos.length) || 1;
+                      const proximoIntervalo = INTERVALOS[Math.min(nivelAtual - 1, INTERVALOS.length - 1)];
+                      return `Volta em ${proximoIntervalo} dia(s).`;
+                    })()
                   : "Sem problema — volta amanhã."}
               </div>
               <PrimaryButton onClick={proxima}>{idx + 1 >= fila.length ? "FINALIZAR REVISÃO" : "PRÓXIMO PENDENTE"}<Icon type="chevron-right" size={18} color={T.void} /></PrimaryButton>
